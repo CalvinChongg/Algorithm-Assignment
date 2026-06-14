@@ -68,14 +68,24 @@ int main() {
     for (int pass = 1; pass <= 10; pass++) {
         int count[10] = {0};
 
+        // put each digits into their own array to know how many of the same digit there is
         for (int i = 0; i < n; i++) {
             int digit = (dataset[i].number / divisor) % 10;
             count[digit]++;
         }
 
+        // cummulative sum
         for (int i = 1; i < 10; i++) {
             count[i] += count[i - 1];
         }
+
+        // step 1 : get last digit of numbers being read
+        // step 2 : "count[digit]" to get the cum num of that digit, then we -1 for human reading
+        // we then assign the array "output" of THAT slot with numbers being read "dataset[i]"
+        // step 3 : then decrease the count of that EXACT digit
+        
+        //example we already give them range like digit 0 has slot 0 to 4 
+        //then digit 1 has slot 5 to 6, even if count[0]-- it will not affect count[1]
 
         for (int i = n - 1; i >= 0; i--) {
             int digit = (dataset[i].number / divisor) % 10;
@@ -83,6 +93,8 @@ int main() {
             count[digit]--;
         }
 
+        // replace each lines with new sorted lines
+        // repeat with next divisor
         for (int i = 0; i < n; i++) {
             dataset[i] = output[i];
         }
