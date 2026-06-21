@@ -19,7 +19,7 @@ bool isPrime(int n) {
     if (n <= 1) return false;
     if (n <= 3) return true;
     if (n % 2 == 0 || n % 3 == 0) return false;
-    for (int i = 5; i * i <= n; i += 6) {
+    for (int i = 5; (long long)i * i <= n; i += 6) {
         if (n % i == 0 || n % (i + 2) == 0) return false;
     }
     return true;
@@ -31,7 +31,7 @@ int getOptimalPrime(int datasetSize) {
             return i;
         }
     }
-    return 997; 
+    return 997;
 }
 
 int primeDivisor = 0;
@@ -45,8 +45,8 @@ int main() {
     // 1. CONFIGURATION
     // Change inputSize to test different dataset amounts
     // ==========================================
-    string inputSize = "10000000"; 
-    string inputFilename = "dataset_" + inputSize + ".csv"; 
+    string inputSize = "1000";
+    string inputFilename = "dataset_" + inputSize + ".csv";
     string outputFilename = "hash_table_search_dataset_" + inputSize + ".txt";
 
     // ==========================================
@@ -84,7 +84,7 @@ int main() {
     // 3. BUILD THE HASH TABLE
     // ==========================================
     primeDivisor = getOptimalPrime(n);
-    vector<vector<Record>> hashTable(primeDivisor); 
+    vector<vector<Record>> hashTable(primeDivisor);
 
     for (int i = 0; i < n; i++) {
         int index = hashFunction(dataset[i].number);
@@ -107,7 +107,7 @@ int main() {
         }
     }
 
-    // Find Worst Case: Find the most crowded bucket, then calculate a "fake" 
+    // Find Worst Case: Find the most crowded bucket, then calculate a "fake"
     // number that forces the search to check the entire chain
     for (int i = 0; i < primeDivisor; i++) {
         if (hashTable[i].size() > maxChainSize) {
@@ -115,44 +115,66 @@ int main() {
             maxChainIndex = i;
         }
     }
-    worstCaseTarget = maxChainIndex + (100000000LL * primeDivisor); 
+    worstCaseTarget = maxChainIndex + (100000000LL * primeDivisor);
 
     // ==========================================
     // 5. RUN THE TIMING TESTS
     // Document Requirement: Perform 'n' searches where n is the dataset size.
+    //
+    // Each loop below writes its per-iteration result into a `volatile`
+    // sink variable. This stops the compiler from discarding the search
+    // as dead code (since the result was otherwise never used), which is
+    // what was causing the unrealistic timings before.
     // ==========================================
-    
+
     // --- BEST CASE TEST ---
+    // bestCaseTarget is read through a volatile copy every iteration so the
+    // compiler cannot assume it (and therefore the hash + chain-walk result)
+    // is the same across iterations and hoist the work out of the loop.
+    volatile long long bestTargetV = bestCaseTarget;
+    volatile long long sinkBest = 0;
     auto start_best = chrono::high_resolution_clock::now();
     for (int r = 0; r < n; r++) {
-        int index = hashFunction(bestCaseTarget);
-        for (size_t i = 0; i < hashTable[index].size(); i++) {
-            if (hashTable[index][i].number == bestCaseTarget) break;
+        long long t = bestTargetV;
+        int index = hashFunction(t);
+        size_t i = 0;
+        for (; i < hashTable[index].size(); i++) {
+            if (hashTable[index][i].number == t) break;
         }
+        sinkBest += (long long)i;
     }
     auto end_best = chrono::high_resolution_clock::now();
     double bestTime = chrono::duration<double>(end_best - start_best).count() / n;
 
     // --- WORST CASE TEST ---
+    // Same fix: read worstCaseTarget through a volatile copy each iteration.
+    volatile long long worstTargetV = worstCaseTarget;
+    volatile long long sinkWorst = 0;
     auto start_worst = chrono::high_resolution_clock::now();
     for (int r = 0; r < n; r++) {
-        int index = hashFunction(worstCaseTarget);
-        for (size_t i = 0; i < hashTable[index].size(); i++) {
-            if (hashTable[index][i].number == worstCaseTarget) break;
+        long long t = worstTargetV;
+        int index = hashFunction(t);
+        size_t i = 0;
+        for (; i < hashTable[index].size(); i++) {
+            if (hashTable[index][i].number == t) break;
         }
+        sinkWorst += (long long)i;
     }
     auto end_worst = chrono::high_resolution_clock::now();
     double worstTime = chrono::duration<double>(end_worst - start_worst).count() / n;
 
     // --- AVERAGE CASE TEST ---
     // Search for every single item in the original dataset once (exactly 'n' searches)
+    volatile long long sinkAvg = 0;
     auto start_avg = chrono::high_resolution_clock::now();
     for (int r = 0; r < n; r++) {
         long long target = dataset[r].number;
         int index = hashFunction(target);
-        for (size_t i = 0; i < hashTable[index].size(); i++) {
+        size_t i = 0;
+        for (; i < hashTable[index].size(); i++) {
             if (hashTable[index][i].number == target) break;
         }
+        sinkAvg += (long long)i;
     }
     auto end_avg = chrono::high_resolution_clock::now();
     double averageTime = chrono::duration<double>(end_avg - start_avg).count() / n;
@@ -161,7 +183,7 @@ int main() {
     // 6. OUTPUT RESULTS
     // Document Requirement: Print in file and command prompt window.
     // ==========================================
-    
+
     // Print to the Command Prompt Window
     cout << "\n--- SEARCH RESULTS (n = " << n << ") ---\n";
     cout << fixed << setprecision(9);
@@ -181,7 +203,7 @@ int main() {
     outFile << "Average case time: " << averageTime << " seconds\n";
     outFile << "Worst case time: " << worstTime << " seconds\n";
     outFile.close();
-    
+
     cout << "\nTesting complete! Results written to " << outputFilename << "\n";
 
     return 0;
