@@ -181,7 +181,6 @@ int main() {
 
     // ==========================================
     // 6. OUTPUT RESULTS
-    // Document Requirement: Print in file and command prompt window.
     // ==========================================
 
     // Print to the Command Prompt Window
