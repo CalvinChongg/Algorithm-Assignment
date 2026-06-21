@@ -45,7 +45,7 @@ int main() {
     // 1. CONFIGURATION
     // Change inputSize to test different dataset amounts
     // ==========================================
-    string inputSize = "1000"; 
+    string inputSize = "10000000"; 
     string inputFilename = "dataset_" + inputSize + ".csv"; 
     string outputFilename = "hash_table_search_dataset_" + inputSize + ".txt";
 
