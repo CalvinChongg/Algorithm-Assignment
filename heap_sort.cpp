@@ -1,3 +1,21 @@
+// *********************************************************
+// Program: heap_sort.cpp
+// Course: CCP6214 Algorithm Design and Analysis
+// Lecture Class: TC5L
+// Tutorial Class: T17L
+// Trimester: 2610
+// Member_1: 242UC244KX | YAP CHI YI | yap.chi.yi@student.mmu.edu.my | 0182694514
+// Member_2: 242UC244JT | CHONG MENG HANG | chong.meng.hang@student.mmu.edu.my | 0168711296
+// Member_3: 242UC244S6 | THAM MEI TING | tham.mei.ting@student.mmu.edu.my | 0173268006
+// Member_4: 242UC244PF | TAN YONG XIN | tan.yong.xin@student.mmu.edu.my | 0126556505
+// *********************************************************
+// Task Distribution
+// Member_1: Radix sort
+// Member_2: Hash Table Search
+// Member_3: Heap Sort
+// Member_4: Dataset Generator
+// ***************************************************** 
+
 #include <iostream>
 #include <fstream>
 #include <vector>
